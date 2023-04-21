@@ -62,7 +62,7 @@
 
 
     <TextView
-        android:id="@+id/CommentLabel"
+        android:id="@+id/tvName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@+id/AddRecordBtn"
@@ -74,10 +74,10 @@
         ></TextView>
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/tvName"
+        app:layout_constraintTop_toBottomOf="@+id/tvName"
+        android:id="@+id/rvItemsList"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@+id/CommentLabel"
         android:visibility="visible"
         tools:visibility="visible"
         ></androidx.recyclerview.widget.RecyclerView>
