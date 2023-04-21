@@ -30,7 +30,6 @@ class MainActivity : AppCompatActivity() {
                 setupListOfDataIntoRecyclerView(list, employeeDao)
             }
         }
-
     }
 
     fun addRecord(employeeDao: EmployeeDao) {
