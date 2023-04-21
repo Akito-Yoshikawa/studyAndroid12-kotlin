@@ -48,7 +48,6 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(applicationContext, "Name or Email cannot be blank", Toast.LENGTH_LONG).show()
         }
     }
-
     private fun setupListOfDataIntoRecyclerView(employeesList:ArrayList<EmployeeEntity>,
     employeeDao: EmployeeDao) {
         if (employeesList.isNotEmpty()) {
