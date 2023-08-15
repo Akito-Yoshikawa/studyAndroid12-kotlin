@@ -4,20 +4,21 @@ import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.Settings
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.widget.AppCompatEditText
 import androidx.appcompat.widget.Toolbar
-import com.karumi.dexter.Dexter
-import com.karumi.dexter.MultiplePermissionsReport
-import com.karumi.dexter.PermissionToken
-import com.karumi.dexter.listener.PermissionRequest
-import com.karumi.dexter.listener.multi.MultiplePermissionsListener
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.startActivity
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -28,6 +29,13 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
 
     private var etDate: AppCompatEditText? = null
     private var tvAddImage: TextView? = null
+
+    private val PERMISSION_WRITE_EX_STR = 1
+
+    private val permissions = arrayOf(
+        android.Manifest.permission.READ_EXTERNAL_STORAGE,
+        android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -83,8 +91,6 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
                     when(which) {
                         0 -> choosePhotoFromGallery()
                         1 -> Toast.makeText(this@AddHappyPlaceActivity, "Camera selection coming soon", Toast.LENGTH_LONG).show()
-
-
                     }
                 }
                 pictureDialog.show()
@@ -94,29 +100,45 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun choosePhotoFromGallery() {
-        Dexter.withContext(this)
-            .withPermissions(
-            android.Manifest.permission.READ_EXTERNAL_STORAGE, android.Manifest.permission.WRITE_EXTERNAL_STORAGE
-        ).withListener(object: MultiplePermissionsListener {
-                override fun onPermissionsChecked(report: MultiplePermissionsReport?) {
 
-                    // nullableじゃないと、falseになる
-                    // 写真の読み取り書き込みが許可されているかどうか
-                    if(report!!.areAllPermissionsGranted()) {
-                        Toast.makeText(this@AddHappyPlaceActivity, "Storage READ/WRITE permission are granted", Toast.LENGTH_LONG).show()
-                    }
-                }
-                override fun onPermissionRationaleShouldBeShown(permissions: MutableList<PermissionRequest>?, token: PermissionToken) {
+        val permission = if (Build.VERSION.SDK_INT > 32) {
+            android.Manifest.permission.READ_MEDIA_IMAGES
+        } else {
+            android.Manifest.permission.READ_EXTERNAL_STORAGE
+        }
 
-                    showRationalDialogForPermissions()
-                    token?.continuePermissionRequest()
-                }
-        }).onSameThread().check()
+        val permissionCheck = ContextCompat.checkSelfPermission(this, permission)
+        if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, permission)) {
+                // パーミッションが必要であることを明示する
+                showRationalDialogForPermissions()
+            } else {
+                // パーミッションリクエストダイアログを開く
+                requestPermissionResult.launch(arrayOf(permission))
+            }
+        } else {
+            // already permitted.
+        }
+
     }
 
+
+
+    private val requestPermissionResult = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted ->
+
+        if ((Build.VERSION.SDK_INT > 32 && granted[android.Manifest.permission.READ_MEDIA_IMAGES] == true)
+            || (Build.VERSION.SDK_INT <= 32 && granted[android.Manifest.permission.READ_EXTERNAL_STORAGE] == true)) {
+            Toast.makeText(this@AddHappyPlaceActivity, "Storage READ permission are granted", Toast.LENGTH_LONG).show()
+        } else {
+            showRationalDialogForPermissions()
+        }
+
+    }
+
+
     private fun showRationalDialogForPermissions() {
-        AlertDialog.Builder(this).setMessage("パーミッションがオフになっています")
-            .setPositiveButton("GO TO Settings") { _, _ ->
+        AlertDialog.Builder(this).setMessage("パーミッションがオフになっています。設定画面で、パーミッションを許可してください。")
+            .setPositiveButton("設定画面へ移動する") { _, _ ->
                 try {
                     val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
                     val uri = Uri.fromParts("package", packageName, null)
