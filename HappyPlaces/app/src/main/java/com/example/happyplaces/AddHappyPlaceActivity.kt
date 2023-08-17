@@ -1,16 +1,22 @@
 package com.example.happyplaces
 
+import android.app.Activity
 import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.content.ActivityNotFoundException
+import android.content.ContentResolver
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.provider.MediaStore
 import android.provider.Settings
 import android.view.View
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -19,6 +25,7 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.startActivity
+import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -118,23 +125,35 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
             }
         } else {
             // already permitted.
+            actionPickLauncher.launch("image/*")
         }
-
     }
-
-
 
     private val requestPermissionResult = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted ->
 
         if ((Build.VERSION.SDK_INT > 32 && granted[android.Manifest.permission.READ_MEDIA_IMAGES] == true)
             || (Build.VERSION.SDK_INT <= 32 && granted[android.Manifest.permission.READ_EXTERNAL_STORAGE] == true)) {
-            Toast.makeText(this@AddHappyPlaceActivity, "Storage READ permission are granted", Toast.LENGTH_LONG).show()
+
+            actionPickLauncher.launch("image/*")
         } else {
             showRationalDialogForPermissions()
         }
-
     }
 
+    private val actionPickLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { result ->
+
+        result?.let {
+            try {
+                val selectedImageBitmap = it.getBitmapOrNull(this.contentResolver)
+                val ivPlaceImage = findViewById<ImageView>(R.id.iv_place_image)
+                ivPlaceImage.setImageBitmap(selectedImageBitmap)
+
+            } catch (e: IOException) {
+                e.printStackTrace()
+                Toast.makeText(this@AddHappyPlaceActivity, "Failed to load the Image from Gallery", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
 
     private fun showRationalDialogForPermissions() {
         AlertDialog.Builder(this).setMessage("パーミッションがオフになっています。設定画面で、パーミッションを許可してください。")
@@ -158,4 +177,16 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
         val sdf = SimpleDateFormat(myFormat, Locale.getDefault())
         etDate!!.setText(sdf.format(cal.time).toString())
     }
+}
+
+/* Bitmap拡張関数 */
+fun Uri.getBitmapOrNull(contentResolver: ContentResolver): Bitmap? {
+    return kotlin.runCatching {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val source = ImageDecoder.createSource(contentResolver, this)
+            ImageDecoder.decodeBitmap(source)
+        } else {
+            MediaStore.Images.Media.getBitmap(contentResolver, this)
+        }
+    }.getOrNull()
 }
