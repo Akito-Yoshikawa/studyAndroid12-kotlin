@@ -97,7 +97,7 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
                 pictureDialog.setItems(pictureDialogItems) { dialog, which ->
                     when(which) {
                         0 -> choosePhotoFromGallery()
-                        1 -> Toast.makeText(this@AddHappyPlaceActivity, "Camera selection coming soon", Toast.LENGTH_LONG).show()
+                        1 -> takePhotoFromCamera()
                     }
                 }
                 pictureDialog.show()
@@ -106,6 +106,57 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
+    /* カメラのパーミッションを要求する */
+    private fun takePhotoFromCamera() {
+
+        val permission = android.Manifest.permission.CAMERA
+
+        if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, permission)) {
+                // パーミッションが必要であることを明示する
+                showRationalDialogForPermissions()
+            } else {
+                // パーミッションリクエストダイアログを開く
+                requestPermissionCamera.launch(permission)
+            }
+
+        } else {
+            // パーミッションが許可されているため、カメラを起動
+            val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+            cameraLauncher.launch(intent)
+        }
+    }
+
+    /* カメラパーミッション要求結果  */
+    private val requestPermissionCamera = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+
+        if (granted) {
+
+            // パーミッションが許可されているため、カメラを起動
+            val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+            cameraLauncher.launch(intent)
+        } else {
+            // パーミッションが得られなかった時
+            showRationalDialogForPermissions()
+        }
+    }
+
+    /* カメラ撮影後処理 */
+    private val cameraLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+
+        if (result.resultCode == RESULT_OK && result.data != null) {
+
+            // 撮影した画像を取得し反映する
+            val thumbNail: Bitmap = result.data!!.extras!!.get("data") as Bitmap
+
+            val ivPlaceImage = findViewById<ImageView>(R.id.iv_place_image)
+            ivPlaceImage.setImageBitmap(thumbNail)
+
+        }
+    }
+
+    /* 画像ファイル読み取りパーミッションを要求する */
     private fun choosePhotoFromGallery() {
 
         val permission = if (Build.VERSION.SDK_INT > 32) {
@@ -129,6 +180,7 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
+    /* 画像ファイル読み取りパーミッション結果 */
     private val requestPermissionResult = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted ->
 
         if ((Build.VERSION.SDK_INT > 32 && granted[android.Manifest.permission.READ_MEDIA_IMAGES] == true)
@@ -140,6 +192,7 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
+    /* 画像ファイル選択後処理 */
     private val actionPickLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { result ->
 
         result?.let {
