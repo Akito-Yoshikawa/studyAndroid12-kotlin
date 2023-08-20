@@ -3,9 +3,7 @@ package com.example.happyplaces
 import android.app.Activity
 import android.app.AlertDialog
 import android.app.DatePickerDialog
-import android.content.ActivityNotFoundException
-import android.content.ContentResolver
-import android.content.Intent
+import android.content.*
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
@@ -15,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
 import android.provider.Settings
+import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
@@ -25,7 +24,10 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.startActivity
+import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
+import java.io.OutputStream
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -153,6 +155,11 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
             val ivPlaceImage = findViewById<ImageView>(R.id.iv_place_image)
             ivPlaceImage.setImageBitmap(thumbNail)
 
+            // 画像ファイルの保存
+            val saveImageToInternalStorage = saveImageToInternalStorage(thumbNail)
+            Log.e("Saved image: ", "Path :: $saveImageToInternalStorage")
+
+
         }
     }
 
@@ -201,6 +208,10 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
                 val ivPlaceImage = findViewById<ImageView>(R.id.iv_place_image)
                 ivPlaceImage.setImageBitmap(selectedImageBitmap)
 
+                // 画像ファイルの保存
+                val saveImageToInternalStorage = saveImageToInternalStorage(selectedImageBitmap!!)
+                Log.e("Saved image: ", "Path :: $saveImageToInternalStorage")
+
             } catch (e: IOException) {
                 e.printStackTrace()
                 Toast.makeText(this@AddHappyPlaceActivity, "Failed to load the Image from Gallery", Toast.LENGTH_LONG).show()
@@ -230,6 +241,26 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
         val sdf = SimpleDateFormat(myFormat, Locale.getDefault())
         etDate!!.setText(sdf.format(cal.time).toString())
     }
+
+    private fun saveImageToInternalStorage(bitmap: Bitmap): Uri {
+        val wrapper = ContextWrapper(applicationContext)
+        var file = wrapper.getDir("HappyPlacesImages", Context.MODE_PRIVATE)
+        file = File(file,"${UUID.randomUUID()}.jpg")
+
+        try {
+            val stream: OutputStream = FileOutputStream(file)
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream)
+
+            stream.flush()
+            stream.close()
+
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+
+        return Uri.parse(file.absolutePath)
+    }
+
 }
 
 /* Bitmap拡張関数 */
