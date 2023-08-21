@@ -1,4 +1,4 @@
-package com.example.happyplaces
+package com.example.happyplaces.activitys
 
 import android.app.Activity
 import android.app.AlertDialog
@@ -15,6 +15,7 @@ import android.provider.MediaStore
 import android.provider.Settings
 import android.util.Log
 import android.view.View
+import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -24,6 +25,7 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.startActivity
+import com.example.happyplaces.R
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -36,10 +38,12 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
     private val cal = Calendar.getInstance()
     private lateinit var dateSetListener: DatePickerDialog.OnDateSetListener
 
+    private var saveImageToInternalStorage: Uri? = null
+    private var mLatitude: Double = 0.0
+    private var mLongitude: Double = 0.0
+
     private var etDate: AppCompatEditText? = null
     private var tvAddImage: TextView? = null
-
-    private val PERMISSION_WRITE_EX_STR = 1
 
     private val permissions = arrayOf(
         android.Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -52,8 +56,9 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
 
         val toolBarPlace: Toolbar = findViewById(R.id.toolbar_add_place)
         etDate = findViewById(R.id.et_date)
-
         tvAddImage = findViewById(R.id.tv_add_image)
+
+        val btnSave = findViewById<Button>(R.id.btn_save)
 
         // ActionBarをセット
         setSupportActionBar(toolBarPlace)
@@ -75,7 +80,7 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
 
         etDate!!.setOnClickListener(this)
         tvAddImage!!.setOnClickListener(this)
-
+        btnSave!!.setOnClickListener(this)
     }
 
     /// onClickイベント(setOnClickListenerしたもの)
@@ -103,6 +108,11 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
                     }
                 }
                 pictureDialog.show()
+            }
+
+            // 保存を押下
+            R.id.btn_save -> {
+                // TODO SQLiteにデータを保存
 
             }
         }
@@ -156,7 +166,7 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
             ivPlaceImage.setImageBitmap(thumbNail)
 
             // 画像ファイルの保存
-            val saveImageToInternalStorage = saveImageToInternalStorage(thumbNail)
+            saveImageToInternalStorage = saveImageToInternalStorage(thumbNail)
             Log.e("Saved image: ", "Path :: $saveImageToInternalStorage")
 
 
@@ -209,7 +219,7 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
                 ivPlaceImage.setImageBitmap(selectedImageBitmap)
 
                 // 画像ファイルの保存
-                val saveImageToInternalStorage = saveImageToInternalStorage(selectedImageBitmap!!)
+                saveImageToInternalStorage = saveImageToInternalStorage(selectedImageBitmap!!)
                 Log.e("Saved image: ", "Path :: $saveImageToInternalStorage")
 
             } catch (e: IOException) {
