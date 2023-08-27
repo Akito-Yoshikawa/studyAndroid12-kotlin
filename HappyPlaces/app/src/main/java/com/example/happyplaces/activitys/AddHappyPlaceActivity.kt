@@ -16,6 +16,7 @@ import android.provider.Settings
 import android.util.Log
 import android.view.View
 import android.widget.Button
+import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -26,6 +27,8 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.startActivity
 import com.example.happyplaces.R
+import com.example.happyplaces.database.DatabaseHandler
+import com.example.happyplaces.models.HappyPlaceModel
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -45,6 +48,10 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
     private var etDate: AppCompatEditText? = null
     private var tvAddImage: TextView? = null
 
+    private var etTitle: AppCompatEditText? = null
+    private var etDescription: AppCompatEditText? = null
+    private var etLocation: AppCompatEditText? = null
+
     private val permissions = arrayOf(
         android.Manifest.permission.READ_EXTERNAL_STORAGE,
         android.Manifest.permission.WRITE_EXTERNAL_STORAGE
@@ -59,6 +66,10 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
         tvAddImage = findViewById(R.id.tv_add_image)
 
         val btnSave = findViewById<Button>(R.id.btn_save)
+
+        etTitle = findViewById(R.id.et_title)
+        etDescription = findViewById(R.id.et_description)
+        etLocation = findViewById(R.id.et_location)
 
         // ActionBarをセット
         setSupportActionBar(toolBarPlace)
@@ -77,6 +88,7 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
 
             updateDateInView()
         }
+        updateDateInView()
 
         etDate!!.setOnClickListener(this)
         tvAddImage!!.setOnClickListener(this)
@@ -112,7 +124,49 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
 
             // 保存を押下
             R.id.btn_save -> {
-                // TODO SQLiteにデータを保存
+                // 入力内容nullチェック
+
+                when {
+                    etTitle?.text.isNullOrEmpty() -> {
+                        Toast.makeText(this@AddHappyPlaceActivity, "Please enter title", Toast.LENGTH_LONG).show()
+                    }
+
+                    etDescription?.text.isNullOrEmpty() -> {
+                        Toast.makeText(this@AddHappyPlaceActivity, "Please enter description", Toast.LENGTH_LONG).show()
+                    }
+
+                    etLocation?.text.isNullOrEmpty() -> {
+                        Toast.makeText(this@AddHappyPlaceActivity, "Please enter location", Toast.LENGTH_LONG).show()
+                    }
+
+                    saveImageToInternalStorage == null -> {
+                        Toast.makeText(this@AddHappyPlaceActivity, "Please select an image", Toast.LENGTH_LONG).show()
+
+                    } else -> {
+                        val happyPlaceModel = HappyPlaceModel(
+                            0,
+                            etTitle?.text.toString(),
+                            saveImageToInternalStorage.toString(),
+                            etDescription?.text.toString(),
+                            etDate?.text.toString(),
+                            etLocation?.text.toString(),
+                            mLatitude,
+                            mLongitude
+                        )
+
+                        val dbHandler = DatabaseHandler(this)
+                        val addHappyPlace = dbHandler.addHappyPlace(happyPlaceModel)
+x
+                        if (addHappyPlace > 0) {
+                            Toast.makeText(this@AddHappyPlaceActivity, "The happy place details are inserted successful", Toast.LENGTH_LONG).show()
+
+                            finish()
+                        }
+
+                    }
+
+
+                }
 
             }
         }
