@@ -1,11 +1,13 @@
 package com.example.happyplaces.activitys
 
+import android.app.Activity
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.TextView
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.happyplaces.R
@@ -19,6 +21,18 @@ class MainActivity : AppCompatActivity() {
     private var happyPlaceListView: RecyclerView? = null
     private var tvNoRecrdsAvailable: TextView? = null
 
+    var startForResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+
+        if (result.resultCode == Activity.RESULT_OK) {
+            getHappyPlacesListFromLocalDB()
+
+        } else {
+            Log.e("Activity", "Cancelled or Back Pressed")
+        }
+
+    }
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -30,11 +44,12 @@ class MainActivity : AppCompatActivity() {
                 FloatingActionButton = findViewById(R.id.fabAddHappyPlace)
         fabAddHappyPlace.setOnClickListener {
             val intent = Intent(this, AddHappyPlaceActivity::class.java)
-            startActivity(intent)
+            startForResult.launch(intent)
         }
 
         getHappyPlacesListFromLocalDB()
     }
+
 
     private fun setupHappyPlacesRecyclerView(happyPlaceList: ArrayList<HappyPlaceModel>) {
         happyPlaceListView?.layoutManager = LinearLayoutManager(this)
@@ -61,5 +76,9 @@ class MainActivity : AppCompatActivity() {
             happyPlaceListView?.visibility = View.GONE
             tvNoRecrdsAvailable?.visibility = View.VISIBLE
         }
+    }
+
+    companion object {
+        var ADD_PLACE_ACTIVITY_REQUEST_CODE = 1
     }
 }

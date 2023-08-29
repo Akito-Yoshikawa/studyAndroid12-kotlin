@@ -1,5 +1,6 @@
 package com.example.happyplaces.activitys
 
+import android.app.Activity
 import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.content.*
@@ -155,7 +156,7 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
                         val addHappyPlace = dbHandler.addHappyPlace(happyPlaceModel)
 
                         if (addHappyPlace > 0) {
-                            Toast.makeText(this@AddHappyPlaceActivity, "The happy place details are inserted successful", Toast.LENGTH_LONG).show()
+                            setResult(Activity.RESULT_OK)
 
                             finish()
                         }
