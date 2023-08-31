@@ -29,7 +29,6 @@ class MainActivity : AppCompatActivity() {
         } else {
             Log.e("Activity", "Cancelled or Back Pressed")
         }
-
     }
 
 
@@ -57,6 +56,13 @@ class MainActivity : AppCompatActivity() {
 
         val placesAdapter = HappyPlacesAdapter(happyPlaceList)
         happyPlaceListView?.adapter = placesAdapter
+
+        placesAdapter.setOnClickListener(object: HappyPlacesAdapter.OnClickListener {
+            override fun onClick(position: Int, model: HappyPlaceModel) {
+                val intent = Intent(this@MainActivity, HappyPlaceDetailActivity::class.java)
+                startForResult.launch(intent)
+            }
+        })
     }
 
     private fun getHappyPlacesListFromLocalDB() {
