@@ -49,6 +49,10 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
     private var etTitle: AppCompatEditText? = null
     private var etDescription: AppCompatEditText? = null
     private var etLocation: AppCompatEditText? = null
+    private var ivPlaceImage: ImageView? = null
+
+
+    private var mHappyPlaceDetails: HappyPlaceModel? = null
 
     private val permissions = arrayOf(
         android.Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -68,6 +72,7 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
         etTitle = findViewById(R.id.et_title)
         etDescription = findViewById(R.id.et_description)
         etLocation = findViewById(R.id.et_location)
+        ivPlaceImage = findViewById(R.id.iv_place_image)
 
         // ActionBarをセット
         setSupportActionBar(toolBarPlace)
@@ -75,6 +80,15 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         toolBarPlace.setNavigationOnClickListener {
             onBackPressed()
+        }
+
+        if (intent.hasExtra(MainActivity.EXTRA_PLACE_DETAILS)) {
+            val userData = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                intent.getParcelableExtra(MainActivity.EXTRA_PLACE_DETAILS, HappyPlaceModel::class.java)
+            } else {
+                intent.getParcelableExtra<HappyPlaceModel>(MainActivity.EXTRA_PLACE_DETAILS)
+            }
+            mHappyPlaceDetails = userData
         }
 
         dateSetListener = DatePickerDialog.OnDateSetListener { view, year, month, dayOfMonth ->
@@ -87,6 +101,23 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
             updateDateInView()
         }
         updateDateInView()
+
+        if (mHappyPlaceDetails != null) {
+            supportActionBar?.title = "Edit Happy Place"
+
+            etTitle?.setText(mHappyPlaceDetails!!.title)
+            etDescription?.setText(mHappyPlaceDetails!!.description)
+            etDate?.setText(mHappyPlaceDetails!!.date)
+            etLocation?.setText(mHappyPlaceDetails!!.location)
+            mLatitude = mHappyPlaceDetails!!.latitude
+            mLongitude = mHappyPlaceDetails!!.longitude
+
+            saveImageToInternalStorage = Uri.parse(mHappyPlaceDetails!!.image)
+
+            ivPlaceImage?.setImageURI(saveImageToInternalStorage)
+
+            btnSave.text = "UPDATE"
+        }
 
         etDate!!.setOnClickListener(this)
         tvAddImage!!.setOnClickListener(this)
