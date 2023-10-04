@@ -15,6 +15,7 @@ import com.example.happyplaces.R
 import com.example.happyplaces.adapters.HappyPlacesAdapter
 import com.example.happyplaces.database.DatabaseHandler
 import com.example.happyplaces.models.HappyPlaceModel
+import com.example.happyplaces.utils.SwipeToDeleteCallback
 import com.example.happyplaces.utils.SwipeToEditCallback
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
@@ -53,6 +54,9 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun setupHappyPlacesRecyclerView(happyPlaceList: ArrayList<HappyPlaceModel>) {
+
+        val dbHandler = DatabaseHandler(this)
+
         happyPlaceListView?.layoutManager = LinearLayoutManager(this)
         happyPlaceListView?.setHasFixedSize(true)
 
@@ -77,10 +81,19 @@ class MainActivity : AppCompatActivity() {
                 )
             }
         }
-
         val editItemTouchHelper = ItemTouchHelper(editSwipeHandler)
         editItemTouchHelper.attachToRecyclerView(happyPlaceListView)
 
+        var deleteSwipeHandler = object : SwipeToDeleteCallback(this) {
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+
+                placesAdapter.removeAt(viewHolder.adapterPosition)
+
+                getHappyPlacesListFromLocalDB()
+            }
+        }
+        var deleteItemTouchHelper = ItemTouchHelper(deleteSwipeHandler)
+        deleteItemTouchHelper.attachToRecyclerView(happyPlaceListView)
     }
 
     private fun getHappyPlacesListFromLocalDB() {

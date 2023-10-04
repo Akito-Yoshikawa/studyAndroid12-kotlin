@@ -88,6 +88,16 @@ class DatabaseHandler(context: Context) :
         return result
     }
 
+    fun deleteHappyPlace(happyPlace: HappyPlaceModel): Int {
+        val db = this.writableDatabase
+
+        // Delete Keyが一致しているもの
+        val result = db.delete(TABLE_HAPPY_PlACE, KEY_ID + "=" + happyPlace.id, null)
+
+        db.close()
+
+        return  result
+    }
 
     fun getHappyPlacesList(): ArrayList<HappyPlaceModel> {
 

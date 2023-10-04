@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.happyplaces.activitys.AddHappyPlaceActivity
 import com.example.happyplaces.activitys.MainActivity
+import com.example.happyplaces.database.DatabaseHandler
 import com.example.happyplaces.databinding.ItemHappyPlaceBinding
 import com.example.happyplaces.models.HappyPlaceModel
 
@@ -27,6 +28,19 @@ class HappyPlacesAdapter(private val context: Context,
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return ViewHolder(ItemHappyPlaceBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+    }
+
+    fun removeAt(position: Int) {
+        val dbHandler = DatabaseHandler(context)
+
+        val isDeleted = dbHandler.deleteHappyPlace(items[position])
+        if (isDeleted > 0) {
+            // 配列リストからアイテムを削除
+            items.removeAt(position)
+
+            // アイテムが削除されたことをアダプタに通知
+            notifyItemRemoved(position)
+        }
     }
 
     fun notifyEditItem(activity: Activity, position: Int, requestCode: Int) {

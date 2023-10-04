@@ -27,6 +27,11 @@ import androidx.core.content.ContextCompat
 import com.example.happyplaces.R
 import com.example.happyplaces.database.DatabaseHandler
 import com.example.happyplaces.models.HappyPlaceModel
+import com.google.android.libraries.places.api.Places
+import com.google.android.libraries.places.api.model.Place
+import com.google.android.libraries.places.widget.Autocomplete
+import com.google.android.libraries.places.widget.AutocompleteActivity
+import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -82,6 +87,10 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
             onBackPressed()
         }
 
+        if(!Places.isInitialized()) {
+            Places.initialize(this@AddHappyPlaceActivity, resources.getString(R.string.google_maps_api_key))
+        }
+
         if (intent.hasExtra(MainActivity.EXTRA_PLACE_DETAILS)) {
             val userData = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 intent.getParcelableExtra(MainActivity.EXTRA_PLACE_DETAILS, HappyPlaceModel::class.java)
@@ -122,6 +131,7 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
         etDate!!.setOnClickListener(this)
         tvAddImage!!.setOnClickListener(this)
         btnSave!!.setOnClickListener(this)
+        etLocation!!.setOnClickListener(this)
     }
 
     /// onClickイベント(setOnClickListenerしたもの)
@@ -210,7 +220,17 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
 
 
                 }
+            }
 
+            // 位置情報
+            R.id.et_location -> {
+
+                val fields = listOf(Place.Field.ID, Place.Field.NAME, Place.Field.ADDRESS, Place.Field.LAT_LNG)
+
+                val intent = Autocomplete.IntentBuilder(AutocompleteActivityMode.FULLSCREEN, fields)
+                            .build(this)
+
+                autocompleteLauncher.launch(intent)
             }
         }
     }
@@ -325,6 +345,36 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
             }
         }
     }
+
+    /* google map API 取得状態 */
+    private val autocompleteLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+
+        when (result.resultCode) {
+
+            RESULT_OK -> {
+
+                // Handle a successful result
+                val data = result.data
+
+                if (data != null) {
+                    val place = Autocomplete.getPlaceFromIntent(data)
+
+                    etLocation?.setText(place.address)
+                    mLatitude = place.latLng!!.latitude
+                    mLongitude = place.latLng!!.longitude
+                }
+            }
+
+            AutocompleteActivity.RESULT_ERROR -> {
+                Toast.makeText(this@AddHappyPlaceActivity, "RESULT ERROR", Toast.LENGTH_LONG).show()
+            }
+
+            RESULT_CANCELED -> {
+                Toast.makeText(this@AddHappyPlaceActivity, "RESULT CANCELED", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
 
     private fun showRationalDialogForPermissions() {
         AlertDialog.Builder(this).setMessage("パーミッションがオフになっています。設定画面で、パーミッションを許可してください。")
