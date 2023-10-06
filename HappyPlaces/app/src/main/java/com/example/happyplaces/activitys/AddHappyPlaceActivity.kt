@@ -7,6 +7,7 @@ import android.content.*
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
+import android.location.LocationManager
 import android.net.Uri
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
@@ -55,7 +56,7 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
     private var etDescription: AppCompatEditText? = null
     private var etLocation: AppCompatEditText? = null
     private var ivPlaceImage: ImageView? = null
-
+    private var tvSelectCurrentLocation: TextView? = null
 
     private var mHappyPlaceDetails: HappyPlaceModel? = null
 
@@ -78,6 +79,8 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
         etDescription = findViewById(R.id.et_description)
         etLocation = findViewById(R.id.et_location)
         ivPlaceImage = findViewById(R.id.iv_place_image)
+
+        tvSelectCurrentLocation = findViewById(R.id.tv_select_current_location)
 
         // ActionBarをセット
         setSupportActionBar(toolBarPlace)
@@ -132,6 +135,13 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
         tvAddImage!!.setOnClickListener(this)
         btnSave!!.setOnClickListener(this)
         etLocation!!.setOnClickListener(this)
+        tvSelectCurrentLocation!!.setOnClickListener(this)
+    }
+
+    private fun isLocationEnabled(): Boolean {
+        val locationManager: LocationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        return  locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+                || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
     }
 
     /// onClickイベント(setOnClickListenerしたもの)
@@ -231,6 +241,20 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
                             .build(this)
 
                 autocompleteLauncher.launch(intent)
+            }
+
+            // 現在位置情報
+            R.id.tv_select_current_location -> {
+                if (!isLocationEnabled()) {
+                    Toast.makeText(this@AddHappyPlaceActivity, "Your location provider is turned off. Please turn off.", Toast.LENGTH_LONG).show()
+
+                    val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+                    startActivity(intent)
+                } else {
+
+                    // 現在位置情報を取得するパーミッションを追加
+                    requestSelectCurrentLocation()
+                }
             }
         }
     }
@@ -343,6 +367,41 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
                 e.printStackTrace()
                 Toast.makeText(this@AddHappyPlaceActivity, "Failed to load the Image from Gallery", Toast.LENGTH_LONG).show()
             }
+        }
+    }
+
+    /* 現在位置情報取得パーミッションを要求する */
+    private fun requestSelectCurrentLocation() {
+        val accessFineLocationPermission = android.Manifest.permission.ACCESS_FINE_LOCATION
+        val accessFineLocationPermissionCheck = ContextCompat.checkSelfPermission(this, accessFineLocationPermission)
+
+        val accessCoarseLocationPermission = android.Manifest.permission.ACCESS_COARSE_LOCATION
+        val accessCoarseLocationPermissionCheck = ContextCompat.checkSelfPermission(this, accessCoarseLocationPermission)
+
+        if (accessFineLocationPermissionCheck != PackageManager.PERMISSION_GRANTED && accessCoarseLocationPermissionCheck != PackageManager.PERMISSION_GRANTED) {
+
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, accessFineLocationPermission)
+                && ActivityCompat.shouldShowRequestPermissionRationale(this, accessCoarseLocationPermission)) {
+                // パーミッションが必要であることを明示する
+                showRationalDialogForPermissions()
+            } else {
+                // パーミッションリクエストダイアログを開く
+                requestSelectCurrentLocationPermissionResult.launch(arrayOf(accessFineLocationPermission, accessCoarseLocationPermission))
+            }
+        } else {
+            // already permitted.
+            Toast.makeText(this@AddHappyPlaceActivity, "SelectCurrentLocation already permitted.", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    /* 現在位置情報取得パーミッション結果 */
+    private val requestSelectCurrentLocationPermissionResult = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted ->
+
+        if (granted[android.Manifest.permission.ACCESS_FINE_LOCATION] == true && granted[android.Manifest.permission.ACCESS_COARSE_LOCATION] == true) {
+            // already permitted.
+            Toast.makeText(this@AddHappyPlaceActivity, "SelectCurrentLocation already permitted.", Toast.LENGTH_LONG).show()
+        } else {
+            showRationalDialogForPermissions()
         }
     }
 
