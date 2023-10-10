@@ -1,5 +1,6 @@
 package com.example.happyplaces.activitys
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
 import android.app.DatePickerDialog
@@ -7,11 +8,13 @@ import android.content.*
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
+import android.location.Location
 import android.location.LocationManager
 import android.net.Uri
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Looper
 import android.provider.MediaStore
 import android.provider.Settings
 import android.util.Log
@@ -28,6 +31,7 @@ import androidx.core.content.ContextCompat
 import com.example.happyplaces.R
 import com.example.happyplaces.database.DatabaseHandler
 import com.example.happyplaces.models.HappyPlaceModel
+import com.google.android.gms.location.*
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.widget.Autocomplete
@@ -60,6 +64,8 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
 
     private var mHappyPlaceDetails: HappyPlaceModel? = null
 
+    private lateinit var mFusedLocationClient: FusedLocationProviderClient
+
     private val permissions = arrayOf(
         android.Manifest.permission.READ_EXTERNAL_STORAGE,
         android.Manifest.permission.WRITE_EXTERNAL_STORAGE
@@ -89,6 +95,8 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
         toolBarPlace.setNavigationOnClickListener {
             onBackPressed()
         }
+
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         if(!Places.isInitialized()) {
             Places.initialize(this@AddHappyPlaceActivity, resources.getString(R.string.google_maps_api_key))
@@ -142,6 +150,31 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
         val locationManager: LocationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
         return  locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
                 || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+    }
+
+    /// 現在位置の取得をリクエスト
+    @SuppressLint("MissingPermission")
+    private fun requestNewLocationData() {
+        var mLocationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000)
+            .setWaitForAccurateLocation(false)
+            .setMaxUpdates(1)
+            .build()
+        mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallBack, Looper.myLooper())
+    }
+
+    /// 現在位置の取得コールバッグ
+    private val mLocationCallBack = object : LocationCallback() {
+
+        override fun onLocationResult(p0: LocationResult) {
+            super.onLocationResult(p0)
+
+            val mLastLocation: Location = p0.lastLocation!!
+            mLatitude = mLastLocation.latitude
+            mLongitude = mLastLocation.longitude
+
+            Log.i("current latitude", "$mLatitude")
+            Log.i("current longitude", "$mLongitude")
+        }
     }
 
     /// onClickイベント(setOnClickListenerしたもの)
@@ -390,7 +423,7 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
             }
         } else {
             // already permitted.
-            Toast.makeText(this@AddHappyPlaceActivity, "SelectCurrentLocation already permitted.", Toast.LENGTH_LONG).show()
+            requestNewLocationData()
         }
     }
 
@@ -399,7 +432,7 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
 
         if (granted[android.Manifest.permission.ACCESS_FINE_LOCATION] == true && granted[android.Manifest.permission.ACCESS_COARSE_LOCATION] == true) {
             // already permitted.
-            Toast.makeText(this@AddHappyPlaceActivity, "SelectCurrentLocation already permitted.", Toast.LENGTH_LONG).show()
+            requestNewLocationData()
         } else {
             showRationalDialogForPermissions()
         }
