@@ -28,15 +28,18 @@ import androidx.appcompat.widget.AppCompatEditText
 import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import com.example.happyplaces.R
 import com.example.happyplaces.database.DatabaseHandler
 import com.example.happyplaces.models.HappyPlaceModel
+import com.example.happyplaces.utils.GetAddressFromLatLng
 import com.google.android.gms.location.*
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.widget.Autocomplete
 import com.google.android.libraries.places.widget.AutocompleteActivity
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
+import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -174,6 +177,23 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
 
             Log.i("current latitude", "$mLatitude")
             Log.i("current longitude", "$mLongitude")
+
+            val addressTask = GetAddressFromLatLng(this@AddHappyPlaceActivity, mLatitude, mLongitude)
+            addressTask.setCustomAddressListener(object: GetAddressFromLatLng.AddressListener{
+
+                override fun onAddressFound(address: String?) {
+                    etLocation?.setText(address)
+                }
+
+                override fun onError() {
+                    Log.e("Get Address:: ", "Something went wrong")
+                }
+            })
+
+            // 非同期処理
+            lifecycleScope.launch {
+                addressTask.launchBackgroundProcessForRequest()
+            }
         }
     }
 
