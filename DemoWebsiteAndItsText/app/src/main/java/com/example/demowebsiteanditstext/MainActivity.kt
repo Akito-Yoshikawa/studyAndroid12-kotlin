@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import androidx.lifecycle.lifecycleScope
+import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -38,10 +39,11 @@ class MainActivity : AppCompatActivity() {
 
             val jsonObject = JSONObject(result)
 
-            val message = jsonObject.optString("message")
-
-
             Log.i("JSON RESPONSE RESULT", result)
+
+            val responseData = Gson().fromJson(result, ResponseData::class.java)
+            Log.i("Message", responseData.message)
+
 
             // onPostExecuteと同等の処理
             withContext(Dispatchers.Main) {
@@ -84,6 +86,7 @@ class MainActivity : AppCompatActivity() {
             writeDataOutputStream.writeBytes(jsonRequest.toString())
             writeDataOutputStream.flush()
             writeDataOutputStream.close()
+
 
 
             val httpResult: Int = connection.responseCode
