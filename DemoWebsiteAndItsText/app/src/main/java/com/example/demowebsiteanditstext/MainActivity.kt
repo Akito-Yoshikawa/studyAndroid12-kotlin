@@ -9,7 +9,9 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONObject
 import java.io.BufferedReader
+import java.io.DataOutputStream
 import java.io.IOException
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
@@ -31,8 +33,13 @@ class MainActivity : AppCompatActivity() {
 
             // 非同期処理
             val result = withContext(Dispatchers.IO) {
-                callAPILoginAsyncTask()
+                callAPILoginAsyncTask("denis", "123456")
             }
+
+            val jsonObject = JSONObject(result)
+
+            val message = jsonObject.optString("message")
+
 
             Log.i("JSON RESPONSE RESULT", result)
 
@@ -45,7 +52,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var customProgressDialog: Dialog
 
-    private suspend fun callAPILoginAsyncTask(): String {
+    private suspend fun callAPILoginAsyncTask(userName: String, password: String): String {
 
         var result: String
 
@@ -59,6 +66,25 @@ class MainActivity : AppCompatActivity() {
 
             connection.doInput = true
             connection.doOutput = true
+
+            connection.instanceFollowRedirects = false
+
+            connection.requestMethod = "POST"
+            connection.setRequestProperty("Content-Type", "application/json")
+            connection.setRequestProperty("charset", "utf-8")
+            connection.setRequestProperty("Accept", "application/json")
+
+            connection.useCaches = false
+
+            val writeDataOutputStream = DataOutputStream(connection.outputStream)
+            val jsonRequest = JSONObject()
+            jsonRequest.put("username", userName)
+            jsonRequest.put("password", password)
+
+            writeDataOutputStream.writeBytes(jsonRequest.toString())
+            writeDataOutputStream.flush()
+            writeDataOutputStream.close()
+
 
             val httpResult: Int = connection.responseCode
 
