@@ -108,6 +108,8 @@ class MainActivity : AppCompatActivity() {
 //
 //            Log.i("current latitude", "$mLatitude")
 //            Log.i("current longitude", "$mLongitude")
+
+            getLocationWeatherDetails()
         }
     }
 
@@ -127,5 +129,16 @@ class MainActivity : AppCompatActivity() {
                 dialog.dismiss()
             }.show()
     }
+
+    private fun getLocationWeatherDetails() {
+
+        if (Constants.insNetworkAvailable(this)) {
+
+            Toast.makeText(this@MainActivity, "ネットワークに接続されています", Toast.LENGTH_LONG).show()
+        } else {
+            Toast.makeText(this@MainActivity, "ネットワークに接続されていない", Toast.LENGTH_LONG).show()
+
+        }
+   }
 
 }
