@@ -19,6 +19,7 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.example.weatherapp.databinding.ActivityMainBinding
 import com.example.weatherapp.models.WeatherResponse
 import com.example.weatherapp.network.WeatherService
 import com.google.android.gms.location.*
@@ -34,9 +35,13 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var customProgressDialog: Dialog
 
+    private lateinit var binding: ActivityMainBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
@@ -175,6 +180,11 @@ class MainActivity : AppCompatActivity() {
                         val weatherList: WeatherResponse? = response.body()
 
                         Log.i("Response Result", "$weatherList")
+
+                        if (weatherList != null) {
+                            setupUI(weatherList)
+                        }
+
                     } else {
 
                         when(response.code()) {
@@ -208,5 +218,27 @@ class MainActivity : AppCompatActivity() {
 
     private fun cancelProgressDialog() {
         customProgressDialog.dismiss()
+    }
+    private fun setupUI(weatherResponse: WeatherResponse) {
+
+        for (i in weatherResponse.weather.indices) {
+
+            Log.i("Weather Name", weatherResponse.weather.toString())
+
+            binding.tvMain.text = weatherResponse.weather[i].description
+            binding.tvMainDescription.text = weatherResponse.weather[i].description
+            binding.tvTemp.text = weatherResponse.main.temp.toString() + getUnit(application.resources.configuration.locales.toString())
+        }
+    }
+
+    private fun getUnit(value: String): String? {
+
+        var localValue = "°C"
+
+        if ("US" == value || "LR" == value || "MM" == value) {
+            localValue = "°F"
+        }
+
+        return localValue
     }
 }
