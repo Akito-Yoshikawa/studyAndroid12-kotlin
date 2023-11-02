@@ -2,6 +2,7 @@ package com.example.weatherapp
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog
+import android.app.Dialog
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
@@ -31,6 +32,8 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var mFusedLocationClient: FusedLocationProviderClient
 
+    private lateinit var customProgressDialog: Dialog
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -55,7 +58,6 @@ class MainActivity : AppCompatActivity() {
 
         return  locationManger.isProviderEnabled(LocationManager.GPS_PROVIDER)
                 || locationManger.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
-
     }
 
     private fun requestSelectCurrentLocation() {
@@ -153,11 +155,15 @@ class MainActivity : AppCompatActivity() {
                 latitude, longitude, Constants.METRIC_UNIT, Constants.APP_ID
             )
 
+            showProgressDialog()
+
             // リクエストを非同期で実行し、応答を処理
             listCall.enqueue(object : Callback<WeatherResponse> {
                 override fun onFailure(call: Call<WeatherResponse>, t: Throwable) {
                     // リクエストが失敗した場合の処理
                     Log.e("Error", t!!.message.toString())
+
+                    cancelProgressDialog()
                 }
 
                 override fun onResponse(
@@ -165,6 +171,7 @@ class MainActivity : AppCompatActivity() {
                     response: Response<WeatherResponse>
                 ) {
                     if (response.isSuccessful) {
+
                         val weatherList: WeatherResponse? = response.body()
 
                         Log.i("Response Result", "$weatherList")
@@ -183,13 +190,23 @@ class MainActivity : AppCompatActivity() {
                         }
 
                     }
+
+                    cancelProgressDialog()
                 }
             })
 
         } else {
             Toast.makeText(this@MainActivity, "ネットワークに接続されていない", Toast.LENGTH_LONG).show()
-
         }
    }
 
+    private fun showProgressDialog() {
+        customProgressDialog = Dialog(this@MainActivity)
+        customProgressDialog.setContentView(R.layout.dialog_custom_progress)
+        customProgressDialog.show()
+    }
+
+    private fun cancelProgressDialog() {
+        customProgressDialog.dismiss()
+    }
 }
