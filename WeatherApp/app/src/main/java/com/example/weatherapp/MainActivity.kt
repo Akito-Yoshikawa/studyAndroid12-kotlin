@@ -18,7 +18,14 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.example.weatherapp.models.WeatherResponse
+import com.example.weatherapp.network.WeatherService
 import com.google.android.gms.location.*
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 class MainActivity : AppCompatActivity() {
 
@@ -103,13 +110,10 @@ class MainActivity : AppCompatActivity() {
             super.onLocationResult(p0)
 
             val mLastLocation: Location = p0.lastLocation!!
-//            mLatitude = mLastLocation.latitude
-//            mLongitude = mLastLocation.longitude
-//
-//            Log.i("current latitude", "$mLatitude")
-//            Log.i("current longitude", "$mLongitude")
+            val mLatitude = mLastLocation.latitude
+            val mLongitude = mLastLocation.longitude
 
-            getLocationWeatherDetails()
+            getLocationWeatherDetails(mLatitude, mLongitude)
         }
     }
 
@@ -130,11 +134,58 @@ class MainActivity : AppCompatActivity() {
             }.show()
     }
 
-    private fun getLocationWeatherDetails() {
+    private fun getLocationWeatherDetails(latitude: Double, longitude: Double) {
 
+        // ネットワークが利用可能かどうかを確認
         if (Constants.insNetworkAvailable(this)) {
 
-            Toast.makeText(this@MainActivity, "ネットワークに接続されています", Toast.LENGTH_LONG).show()
+            // Retrofitを初期化して設定
+            val retrofit: Retrofit = Retrofit.Builder()
+                .baseUrl(Constants.BASE_URL)// ベースURLを設定
+                .addConverterFactory(GsonConverterFactory.create())// JSONデータの変換方法を指定
+                .build()
+
+            // WeatherServiceを作成
+            val service: WeatherService = retrofit.create<WeatherService>(WeatherService::class.java)
+
+            // 天気情報の取得リクエストを作成
+            val listCall: Call<WeatherResponse> = service.getWeather(
+                latitude, longitude, Constants.METRIC_UNIT, Constants.APP_ID
+            )
+
+            // リクエストを非同期で実行し、応答を処理
+            listCall.enqueue(object : Callback<WeatherResponse> {
+                override fun onFailure(call: Call<WeatherResponse>, t: Throwable) {
+                    // リクエストが失敗した場合の処理
+                    Log.e("Error", t!!.message.toString())
+                }
+
+                override fun onResponse(
+                    call: Call<WeatherResponse>,
+                    response: Response<WeatherResponse>
+                ) {
+                    if (response.isSuccessful) {
+                        val weatherList: WeatherResponse? = response.body()
+
+                        Log.i("Response Result", "$weatherList")
+                    } else {
+
+                        when(response.code()) {
+                            400 -> {
+                                Log.e("Error 400", "Bad Connection")
+                            }
+                            404 -> {
+                                Log.e("Error 404", "Not Found")
+                            }
+                            else -> {
+                                Log.e("Error", "Generic Error")
+                            }
+                        }
+
+                    }
+                }
+            })
+
         } else {
             Toast.makeText(this@MainActivity, "ネットワークに接続されていない", Toast.LENGTH_LONG).show()
 
