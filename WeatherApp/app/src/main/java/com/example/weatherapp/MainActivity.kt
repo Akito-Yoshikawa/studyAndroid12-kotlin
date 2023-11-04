@@ -6,6 +6,7 @@ import android.app.Dialog
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationManager
@@ -25,6 +26,7 @@ import com.example.weatherapp.databinding.ActivityMainBinding
 import com.example.weatherapp.models.WeatherResponse
 import com.example.weatherapp.network.WeatherService
 import com.google.android.gms.location.*
+import com.google.gson.Gson
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -41,6 +43,8 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
 
+    private lateinit var mSharedPreferences: SharedPreferences
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -48,6 +52,10 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+
+        mSharedPreferences = getSharedPreferences(Constants.PREFERENCE_NAME, Context.MODE_PRIVATE)
+
+        setupUI()
 
         if (!isLocationEnabled()) {
             Toast.makeText(this@MainActivity, "Your location provider is turned off. Please turn off.", Toast.LENGTH_LONG).show()
@@ -204,7 +212,14 @@ class MainActivity : AppCompatActivity() {
                         Log.i("Response Result", "$weatherList")
 
                         if (weatherList != null) {
-                            setupUI(weatherList)
+
+                            // 取得したjsonStringを保存
+                            val weatherResponseJsonString = Gson().toJson(weatherList)
+                            val editor = mSharedPreferences.edit()
+                            editor.putString(Constants.WEATHER_RESPONSE_DATA, weatherResponseJsonString)
+                            editor.apply()
+
+                            setupUI()
                         }
 
                     } else {
@@ -241,44 +256,51 @@ class MainActivity : AppCompatActivity() {
     private fun cancelProgressDialog() {
         customProgressDialog.dismiss()
     }
-    private fun setupUI(weatherResponse: WeatherResponse) {
+    private fun setupUI() {
 
-        for (i in weatherResponse.weather.indices) {
+        // 保持しておいた、jsonStringを取得
+        val weatherResponseJsonString = mSharedPreferences.getString(Constants.WEATHER_RESPONSE_DATA, "")
 
-            Log.i("Weather Name", weatherResponse.weather.toString())
+        if (!weatherResponseJsonString.isNullOrEmpty()) {
 
-            // 取得したレスポンスをUIに反映していく
-            binding.tvMain.text = weatherResponse.weather[i].main
-            binding.tvMainDescription.text = weatherResponse.weather[i].description
-            binding.tvTemp.text = weatherResponse.main.temp.toString() + getUnit(application.resources.configuration.locales.toString())
+            val weatherResponse = Gson().fromJson(weatherResponseJsonString, WeatherResponse::class.java)
 
-            binding.tvHumidity.text = weatherResponse.main.humidity.toString() + "per cent"
-            binding.tvMin.text = weatherResponse.main.temp_min.toString() + " min"
-            binding.tvMax.text = weatherResponse.main.temp_max.toString() + " max"
-            binding.tvSpeed.text = weatherResponse.wind.speed.toString()
-            binding.tvName.text = weatherResponse.name
-            binding.tvCountry.text = weatherResponse.sys.country
+            for (i in weatherResponse.weather.indices) {
 
-            binding.tvSunriseTime.text = unixTime(weatherResponse.sys.sunrise)
-            binding.tvSunsetTime.text = unixTime(weatherResponse.sys.sunset)
+                Log.i("Weather Name", weatherResponse.weather.toString())
 
-            when (weatherResponse.weather[i].icon) {
-                "01d" -> binding.ivMain.setImageResource(R.drawable.sunny)
-                "02d" -> binding.ivMain.setImageResource(R.drawable.cloud)
-                "03d" -> binding.ivMain.setImageResource(R.drawable.cloud)
-                "04d" -> binding.ivMain.setImageResource(R.drawable.cloud)
-                "04n" -> binding.ivMain.setImageResource(R.drawable.cloud)
-                "10d" -> binding.ivMain.setImageResource(R.drawable.rain)
-                "11d" -> binding.ivMain.setImageResource(R.drawable.storm)
-                "13d" -> binding.ivMain.setImageResource(R.drawable.snowflake)
-                "01n" -> binding.ivMain.setImageResource(R.drawable.cloud)
-                "02n" -> binding.ivMain.setImageResource(R.drawable.cloud)
-                "03n" -> binding.ivMain.setImageResource(R.drawable.cloud)
-                "10n" -> binding.ivMain.setImageResource(R.drawable.cloud)
-                "11n" -> binding.ivMain.setImageResource(R.drawable.rain)
-                "13n" -> binding.ivMain.setImageResource(R.drawable.snowflake)
+                // 取得したレスポンスをUIに反映していく
+                binding.tvMain.text = weatherResponse.weather[i].main
+                binding.tvMainDescription.text = weatherResponse.weather[i].description
+                binding.tvTemp.text = weatherResponse.main.temp.toString() + getUnit(application.resources.configuration.locales.toString())
+
+                binding.tvHumidity.text = weatherResponse.main.humidity.toString() + "per cent"
+                binding.tvMin.text = weatherResponse.main.temp_min.toString() + " min"
+                binding.tvMax.text = weatherResponse.main.temp_max.toString() + " max"
+                binding.tvSpeed.text = weatherResponse.wind.speed.toString()
+                binding.tvName.text = weatherResponse.name
+                binding.tvCountry.text = weatherResponse.sys.country
+
+                binding.tvSunriseTime.text = unixTime(weatherResponse.sys.sunrise)
+                binding.tvSunsetTime.text = unixTime(weatherResponse.sys.sunset)
+
+                when (weatherResponse.weather[i].icon) {
+                    "01d" -> binding.ivMain.setImageResource(R.drawable.sunny)
+                    "02d" -> binding.ivMain.setImageResource(R.drawable.cloud)
+                    "03d" -> binding.ivMain.setImageResource(R.drawable.cloud)
+                    "04d" -> binding.ivMain.setImageResource(R.drawable.cloud)
+                    "04n" -> binding.ivMain.setImageResource(R.drawable.cloud)
+                    "10d" -> binding.ivMain.setImageResource(R.drawable.rain)
+                    "11d" -> binding.ivMain.setImageResource(R.drawable.storm)
+                    "13d" -> binding.ivMain.setImageResource(R.drawable.snowflake)
+                    "01n" -> binding.ivMain.setImageResource(R.drawable.cloud)
+                    "02n" -> binding.ivMain.setImageResource(R.drawable.cloud)
+                    "03n" -> binding.ivMain.setImageResource(R.drawable.cloud)
+                    "10n" -> binding.ivMain.setImageResource(R.drawable.cloud)
+                    "11n" -> binding.ivMain.setImageResource(R.drawable.rain)
+                    "13n" -> binding.ivMain.setImageResource(R.drawable.snowflake)
+                }
             }
-
 
         }
     }
