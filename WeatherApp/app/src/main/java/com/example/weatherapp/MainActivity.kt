@@ -28,6 +28,8 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.text.SimpleDateFormat
+import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -225,9 +227,20 @@ class MainActivity : AppCompatActivity() {
 
             Log.i("Weather Name", weatherResponse.weather.toString())
 
-            binding.tvMain.text = weatherResponse.weather[i].description
+            // 取得したレスポンスをUIに反映していく
+            binding.tvMain.text = weatherResponse.weather[i].main
             binding.tvMainDescription.text = weatherResponse.weather[i].description
             binding.tvTemp.text = weatherResponse.main.temp.toString() + getUnit(application.resources.configuration.locales.toString())
+
+            binding.tvHumidity.text = weatherResponse.main.humidity.toString() + "per cent"
+            binding.tvMin.text = weatherResponse.main.temp_min.toString() + " min"
+            binding.tvMax.text = weatherResponse.main.temp_max.toString() + " max"
+            binding.tvSpeed.text = weatherResponse.wind.speed.toString()
+            binding.tvName.text = weatherResponse.name
+            binding.tvCountry.text = weatherResponse.sys.country
+
+            binding.tvSunriseTime.text = unixTime(weatherResponse.sys.sunrise)
+            binding.tvSunsetTime.text = unixTime(weatherResponse.sys.sunset)
         }
     }
 
@@ -240,5 +253,13 @@ class MainActivity : AppCompatActivity() {
         }
 
         return localValue
+    }
+
+    private fun unixTime(timex: Long): String? {
+        val date = Date(timex *1000L)
+
+        val sdf = SimpleDateFormat("HH:mm", Locale.JAPAN)
+        sdf.timeZone = TimeZone.getDefault()
+        return sdf.format(date)
     }
 }
