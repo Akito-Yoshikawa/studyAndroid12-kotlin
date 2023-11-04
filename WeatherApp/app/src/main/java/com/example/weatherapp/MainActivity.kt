@@ -15,6 +15,8 @@ import android.os.Bundle
 import android.os.Looper
 import android.provider.Settings
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
@@ -56,6 +58,24 @@ class MainActivity : AppCompatActivity() {
 
             // 現在位置情報を取得するパーミッションを追加
             requestSelectCurrentLocation()
+        }
+    }
+
+    // menuを作成
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    // menuのアイテムを選択した時、呼ばれる
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+
+        return when(item.itemId) {
+            R.id.action_refresh -> {
+                requestNewLocationData()
+                true
+            } else -> super.onOptionsItemSelected(item)
         }
     }
 
