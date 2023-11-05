@@ -4,10 +4,14 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
@@ -52,11 +56,20 @@ fun UnitConverter() {
         Row {
             val context = LocalContext.current
 
-            Button(onClick = {
-                Toast.makeText(context, "Thanks for clicking!", Toast.LENGTH_LONG).show()
+            // 任意の位置に配置するBox
+            Box {
+                Button(onClick = { /*TODO*/ }) {
+                    Text("Select")
+                    Icon(Icons.Default.ArrowDropDown, "Arrow Down")
+                }
+            }
 
-            }) {
-                Text("Click Me!")
+            Box {
+                Button(onClick = { /*TODO*/ }) {
+                    Text("Select")
+                    Icon(Icons.Default.ArrowDropDown, "Arrow Down")
+                }
+
             }
         }
 
