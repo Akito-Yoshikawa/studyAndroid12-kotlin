@@ -39,17 +39,23 @@ class MainActivity : ComponentActivity() {
 
         val direction = remember { mutableStateOf("North") }
 
+        val stormOrTreasure = remember { mutableStateOf("") }
+
         Column {
             Text("Treasures Found: ${treasureFound.value}")
             Text("Current Direction: ${direction.value}")
+            Text("${stormOrTreasure.value}")
 
             Button(onClick = {
                 direction.value = "East"
 
                 if (Random.nextBoolean()) {
-                   treasureFound.value += 1
-
+                    treasureFound.value += 1
+                    stormOrTreasure.value = "WE FOUND A TREASURE!!"
+                } else {
+                    stormOrTreasure.value = "STORm AHEAD!"
                 }
+
             }) {
                 Text("Sail East")
             }
@@ -59,8 +65,11 @@ class MainActivity : ComponentActivity() {
 
                 if (Random.nextBoolean()) {
                     treasureFound.value += 1
-
+                    stormOrTreasure.value = "WE FOUND A TREASURE!!"
+                } else {
+                    stormOrTreasure.value = "STORm AHEAD!"
                 }
+
             }) {
                 Text("Sail West")
             }
@@ -70,8 +79,11 @@ class MainActivity : ComponentActivity() {
 
                 if (Random.nextBoolean()) {
                     treasureFound.value += 1
-
+                    stormOrTreasure.value = "WE FOUND A TREASURE!!"
+                } else {
+                    stormOrTreasure.value = "STORm AHEAD!"
                 }
+
             }) {
                 Text("Sail North")
             }
@@ -81,14 +93,15 @@ class MainActivity : ComponentActivity() {
 
                 if (Random.nextBoolean()) {
                     treasureFound.value += 1
-
+                    stormOrTreasure.value = "WE FOUND A TREASURE!!"
+                } else {
+                    stormOrTreasure.value = "STORm AHEAD!"
                 }
+
             }) {
                 Text("Sail South")
             }
         }
-
-
     }
 }
 
