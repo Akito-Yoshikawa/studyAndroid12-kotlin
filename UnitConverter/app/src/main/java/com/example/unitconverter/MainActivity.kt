@@ -34,6 +34,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.unitconverter.ui.theme.UnitConverterTheme
 import org.intellij.lang.annotations.JdkConstants.HorizontalAlignment
+import kotlin.math.roundToInt
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -64,6 +65,12 @@ fun UnitConverter() {
     var isExpanded by remember { mutableStateOf(false) }
     var oExpanded by remember { mutableStateOf(false) }
     val conversionFactor = remember { mutableStateOf(0.01) }
+
+    fun convertUnit() {
+        val inputValueDouble = inputValue.toDoubleOrNull() ?: 0.0
+        val result = (inputValueDouble * conversionFactor.value * 100.0).roundToInt() / 100.0
+        outputValue = result.toString()
+    }
 
     // SwiftUIでいうVStack?
     Column(
@@ -112,22 +119,38 @@ fun UnitConverter() {
                             isExpanded = false
                             inputUnit = "Centimeters"
                             conversionFactor.value = 0.01
+                            convertUnit()
                         }
                     )
 
                     DropdownMenuItem(
                         text = { Text("Meters") },
-                        onClick = { /*TODO*/ }
+                        onClick = {
+                            isExpanded = false
+                            inputUnit = "Meters"
+                            conversionFactor.value = 1.0
+                            convertUnit()
+                        }
                     )
 
                     DropdownMenuItem(
                         text = { Text("Feet") },
-                        onClick = { /*TODO*/ }
+                        onClick = {
+                            isExpanded = false
+                            inputUnit = "Feet"
+                            conversionFactor.value = 0.3048
+                            convertUnit()
+                        }
                     )
 
                     DropdownMenuItem(
                         text = { Text("Milimeters") },
-                        onClick = { /*TODO*/ }
+                        onClick = {
+                            isExpanded = false
+                            inputUnit = "Milimeters"
+                            conversionFactor.value = 0.001
+                            convertUnit()
+                        }
                     )
 
                 }
