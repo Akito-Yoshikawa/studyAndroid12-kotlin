@@ -93,16 +93,26 @@ fun UnitConverter() {
             val context = LocalContext.current
 
             // 任意の位置に配置するBox
+            // Inout Box
             Box {
-                Button(onClick = { /*TODO*/ }) {
+
+                // Input Button
+                Button(onClick = { 
+                    isExpanded = true
+
+                }) {
                     Text("Select")
                     Icon(Icons.Default.ArrowDropDown, "Arrow Down")
                 }
 
-                DropdownMenu(expanded = false, onDismissRequest = { /*TODO*/ }) {
+                DropdownMenu(expanded = isExpanded, onDismissRequest = { isExpanded = false }) {
                     DropdownMenuItem(
                         text = { Text("Centimeters") },
-                        onClick = { /*TODO*/ }
+                        onClick = {
+                            isExpanded = false
+                            inputUnit = "Centimeters"
+                            conversionFactor.value = 0.01
+                        }
                     )
 
                     DropdownMenuItem(
@@ -125,13 +135,15 @@ fun UnitConverter() {
 
             Spacer(modifier = Modifier.width(16.dp))
 
+            // Output Box
             Box {
-                Button(onClick = { /*TODO*/ }) {
+                // Output Button
+                Button(onClick = { oExpanded = true }) {
                     Text("Select")
                     Icon(Icons.Default.ArrowDropDown, "Arrow Down")
                 }
 
-                DropdownMenu(expanded = false, onDismissRequest = { /*TODO*/ }) {
+                DropdownMenu(expanded = oExpanded, onDismissRequest = { oExpanded = false }) {
                     DropdownMenuItem(
                         text = { Text("Centimeters") },
                         onClick = { /*TODO*/ }
