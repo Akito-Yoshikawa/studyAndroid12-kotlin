@@ -81,7 +81,7 @@ fun UnitConverter() {
     ) {
         // Here all the UI elements will be stacked bellow eatch other
 
-        Text("Unit Converter")
+        Text("Unit Converter", style = MaterialTheme.typography.headlineMedium)
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -213,7 +213,9 @@ fun UnitConverter() {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text("Result: $outputValue")
+        Text("Result: $outputValue $outputUnit",
+            style = MaterialTheme.typography.headlineMedium
+        )
 
     }
 }
