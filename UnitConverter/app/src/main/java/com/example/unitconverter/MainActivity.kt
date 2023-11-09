@@ -23,6 +23,10 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -53,6 +57,14 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun UnitConverter() {
 
+    var inputValue by remember { mutableStateOf("") }
+    var outputValue by remember { mutableStateOf("") }
+    var inputUnit by remember { mutableStateOf("Centimeters") }
+    var outputUnit by remember { mutableStateOf("Meters") }
+    var isExpanded by remember { mutableStateOf(false) }
+    var oExpanded by remember { mutableStateOf(false) }
+    val conversionFactor = remember { mutableStateOf(0.01) }
+
     // SwiftUIでいうVStack?
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -65,7 +77,14 @@ fun UnitConverter() {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        OutlinedTextField(value = "", onValueChange = {})
+        OutlinedTextField(value = inputValue, onValueChange = {
+            inputValue = it
+
+
+        }, label = {
+            Text("Enter Value")
+
+        })
 
         Spacer(modifier = Modifier.height(16.dp))
 
