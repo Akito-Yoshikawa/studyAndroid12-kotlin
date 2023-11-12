@@ -12,22 +12,25 @@
         android:theme="@style/Theme.Projemanag"
         tools:targetApi="31">
         <activity
-            android:name=".SignInActivity"
-            android:exported="false"
-            android:screenOrientation="portrait"
-            android:theme="@style/Theme.Projemanag.NoActionBar"/>
+            android:name=".BaseActivity"
+            android:exported="false" />
         <activity
-            android:name=".SignUpActivity"
+            android:name=".activitys.SignInActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.Projemanag.NoActionBar" />
         <activity
-            android:name=".IntroActivity"
+            android:name=".activitys.SignUpActivity"
             android:exported="false"
             android:screenOrientation="portrait"
-            android:theme="@style/Theme.Projemanag.NoActionBar"></activity>
+            android:theme="@style/Theme.Projemanag.NoActionBar" />
         <activity
-            android:name=".SplashActivity"
+            android:name=".activitys.IntroActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Projemanag.NoActionBar" />
+        <activity
+            android:name=".activitys.SplashActivity"
             android:exported="true"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.Projemanag.NoActionBar">
@@ -38,7 +41,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".MainActivity"
+            android:name=".activitys.MainActivity"
             android:exported="true" />
     </application>
 

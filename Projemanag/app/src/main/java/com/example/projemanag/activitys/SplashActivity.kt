@@ -1,21 +1,24 @@
-package com.example.projemanag
+package com.example.projemanag.activitys
 
 import android.content.Intent
+import android.graphics.Typeface
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.WindowInsets
 import android.view.WindowManager
-import com.example.projemanag.databinding.ActivityIntroBinding
+import com.example.projemanag.databinding.ActivitySplashBinding
 
-class IntroActivity : AppCompatActivity() {
+class SplashActivity : AppCompatActivity() {
 
-    private lateinit var binding: ActivityIntroBinding
+    private lateinit var binding: ActivitySplashBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        binding = ActivityIntroBinding.inflate(layoutInflater)
+        binding = ActivitySplashBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -28,13 +31,14 @@ class IntroActivity : AppCompatActivity() {
             )
         }
 
-        binding?.btnSignIn?.setOnClickListener {
-            startActivity(Intent(this, SignInActivity::class.java))
-        }
+        val typeFace: Typeface = Typeface.createFromAsset(assets, "carbon bl.ttf")
+        binding?.tvAppName?.typeface = typeFace
 
-        binding?.btnSignUp?.setOnClickListener {
-            startActivity(Intent(this, SignUpActivity::class.java))
-        }
+        Handler(Looper.getMainLooper()).postDelayed({
+            // イントロ画面に遷移
+            startActivity(Intent(this, IntroActivity::class.java))
+            finish()
 
+        }, 2500)
     }
 }
