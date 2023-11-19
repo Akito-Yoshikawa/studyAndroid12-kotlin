@@ -6,8 +6,11 @@ import android.os.Bundle
 import android.text.TextUtils
 import android.view.WindowInsets
 import android.view.WindowManager
+import android.widget.Toast
 import com.example.projemanag.R
 import com.example.projemanag.databinding.ActivitySignUpBinding
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 
 class SignUpActivity : BaseActivity() {
 
@@ -57,7 +60,28 @@ class SignUpActivity : BaseActivity() {
         val password: String = binding?.etPassword?.text.toString().trim { it <= ' '}
 
         if (validateForm(name, email, password)) {
+            showProgressDialog(resources.getString(R.string.please_wait))
 
+            // アカウント作成
+            FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, password).addOnCompleteListener { task ->
+                hideProgressDialog()
+
+                // アカウント作成成功かどうか
+                if (task.isSuccessful) {
+                    val firebaseUser: FirebaseUser = task.result!!.user!!
+                    val registeredEmail = firebaseUser.email!!
+                    Toast.makeText(
+                        this,
+                        "$name you have successfully registered the email address $registeredEmail",
+                        Toast.LENGTH_LONG
+                    ).show()
+
+                    FirebaseAuth.getInstance().signOut()
+                    finish()
+                } else {
+                    Toast.makeText(this, task.exception!!.message, Toast.LENGTH_LONG).show()
+                }
+            }
         }
     }
 
