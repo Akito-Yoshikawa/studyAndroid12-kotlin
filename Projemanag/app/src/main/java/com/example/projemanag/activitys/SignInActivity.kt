@@ -11,6 +11,8 @@ import android.view.WindowManager
 import android.widget.Toast
 import com.example.projemanag.R
 import com.example.projemanag.databinding.ActivitySignInBinding
+import com.example.projemanag.firebase.FirestoreClass
+import com.example.projemanag.models.User
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
@@ -84,20 +86,23 @@ class SignInActivity : BaseActivity() {
             hideProgressDialog()
             // カレントユーザーがいるので、処理
             Log.d("Sign in", "signInWithEmail:success")
-            startActivity(Intent(this, MainActivity::class.java))
+
+            // User情報の取得を行う。結果は、signInSuccessに送る
+            FirestoreClass().signUser(this)
 
         } else {
 
             // サインイン実行
-            auth.signInWithEmailAndPassword(email, password).addOnCompleteListener(this) { task ->
-
+            auth.signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this) { task ->
                 hideProgressDialog()
 
                 if (task.isSuccessful) {
                     // Sign in success, update UI with the signed-in user's information
                     Log.d("Sign in", "signInWithEmail:success")
-                    val user = auth.currentUser
-                    startActivity(Intent(this, MainActivity::class.java))
+
+                    // User情報の取得を行う。結果は、signInSuccessに送る
+                    FirestoreClass().signUser(this)
 
                 } else {
                     // If sign in fails, display a message to the user.
@@ -129,4 +134,9 @@ class SignInActivity : BaseActivity() {
         }
     }
 
+    fun signInSuccess(loggedInUser: User?) {
+        hideProgressDialog()
+        startActivity(Intent(this, MainActivity::class.java))
+        finish()
+    }
 }
