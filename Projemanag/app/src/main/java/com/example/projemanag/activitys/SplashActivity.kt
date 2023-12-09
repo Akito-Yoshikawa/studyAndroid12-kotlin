@@ -10,6 +10,7 @@ import android.os.Looper
 import android.view.WindowInsets
 import android.view.WindowManager
 import com.example.projemanag.databinding.ActivitySplashBinding
+import com.example.projemanag.firebase.FirestoreClass
 
 class SplashActivity : AppCompatActivity() {
 
@@ -35,8 +36,17 @@ class SplashActivity : AppCompatActivity() {
         binding?.tvAppName?.typeface = typeFace
 
         Handler(Looper.getMainLooper()).postDelayed({
-            // イントロ画面に遷移
-            startActivity(Intent(this, IntroActivity::class.java))
+
+            val currentUserID = FirestoreClass().getCurrentUserId()
+
+            // 既にログイン済みかどうかチェック
+            if (currentUserID.isNotEmpty()) {
+                // メイン画面に遷移
+                startActivity(Intent(this, MainActivity::class.java))
+            } else {
+                // イントロ画面に遷移
+                startActivity(Intent(this, IntroActivity::class.java))
+            }
             finish()
 
         }, 2500)
